@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌱 CarbonRoute</title>
+<style>
+:root{
+  --green:#1f7a4d; --green2:#2e9b62; --light:#eef8f1; --border:#d9e5dc;
+  --text:#17231c; --muted:#68756d; --card:#fff; --bg:#f5f8f6;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid var(--border);padding:25px 20px;position:sticky;top:0;height:100vh}
+.brand{font-size:26px;font-weight:800;margin-bottom:4px}
+.tagline{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:22px}
+label{display:block;font-size:13px;font-weight:700;margin:15px 0 7px}
+input[type=number],input[type=text],select{
+  width:100%;padding:10px 11px;border:1px solid #cfdad2;border-radius:9px;background:#fff;font-size:14px
+}
+input[type=range]{width:100%;accent-color:var(--green)}
+.range-value{font-size:12px;color:var(--green);font-weight:700;text-align:right}
+.main{padding:35px;max-width:1450px;width:100%;margin:auto}
+h1{font-size:36px;margin:0 0 5px}
+.subtitle{color:var(--muted);margin:0 0 10px}
+.flow{font-weight:700;color:#31523e;font-size:14px;margin:14px 0 25px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab{border:0;background:transparent;padding:13px 15px;font-weight:700;color:#66736a;cursor:pointer;border-bottom:3px solid transparent}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 3px 12px rgba(20,50,30,.04)}
+.card h3{margin:0 0 10px;font-size:18px}
+.card p{color:var(--muted);font-size:14px;line-height:1.55}
+.metric{font-size:30px;font-weight:800;margin-top:5px}
+.metric-label{font-size:13px;color:var(--muted)}
+button,.button{
+  border:0;border-radius:9px;padding:10px 15px;background:var(--green);color:white;font-weight:700;cursor:pointer
+}
+button:hover{background:var(--green2)}
+button.secondary{background:#edf3ee;color:#31523e}
+button.danger{background:#f3e9e9;color:#8a3838}
+.notice{padding:14px 16px;border-radius:11px;background:var(--light);border:1px solid #cce5d4;margin:16px 0;line-height:1.5}
+.small{font-size:12px;color:var(--muted)}
+.file{border:1px dashed #b9c9bd;padding:15px;border-radius:10px;background:#fafcfb}
+.action{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--border);border-radius:11px;margin:10px 0}
+.action-title{font-weight:800}.saving{font-weight:800;color:var(--green);white-space:nowrap}
+.action input{width:18px;height:18px;accent-color:var(--green)}
+.bar-row{display:grid;grid-template-columns:145px 1fr 90px;gap:10px;align-items:center;margin:12px 0;font-size:13px}
+.bar{height:17px;background:#e8eee9;border-radius:99px;overflow:hidden}
+.bar > span{display:block;height:100%;background:var(--green);border-radius:99px}
+canvas{width:100%;height:260px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.progress-wrap{background:#e8eee9;border-radius:99px;height:22px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);width:0%;transition:.3s}
+.kpi{padding:16px;border-radius:12px;background:#f8fbf9;border:1px solid var(--border)}
+.kpi strong{display:block;font-size:23px;margin-top:5px}
+.log{max-height:180px;overflow:auto;background:#111a14;color:#d9f1df;padding:12px;border-radius:10px;font-family:monospace;font-size:12px}
+.actions-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}.sidebar{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--border)}
+  .main{padding:22px}.grid,.grid3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">🌱 CarbonRoute</div>
+  <div class="tagline">Google Maps for your carbon footprint · Climate Action (SDG 13)</div>
+  <h3>Your data</h3>
+  <div class="small">Fill by hand, or let the Collect tab fill it automatically.</div>
+
+  <label>Electricity (kWh / month)</label>
+  <input id="elec" type="range" min="0" max="800" step="5" value="120">
+  <div class="range-value"><span id="elecVal">120</span> kWh</div>
+
+  <label>How you travel daily</label>
+  <select id="mode">
+    <option value="walk">Walking</option>
+    <option value="bike">Bike / scooter</option>
+    <option value="car">Car</option>
+    <option value="bus">Bus</option>
+    <option value="train">Train / metro</option>
+  </select>
+
+  <label>Distance per day (km)</label>
+  <input id="km" type="range" min="0" max="60" step="1" value="12">
+  <div class="range-value"><span id="kmVal">12</span> km</div>
+
+  <label>Diet</label>
+  <select id="diet">
+    <option value="vegan">Vegan</option>
+    <option value="vegetarian">Vegetarian</option>
+    <option value="mixed">Mixed</option>
+    <option value="meat">High-meat</option>
+  </select>
+
+  <label>Flights per year (round trips)</label>
+  <input id="flights" type="range" min="0" max="8" step="1" value="1">
+  <div class="range-value"><span id="flightsVal">1</span> flight(s)</div>
+
+  <label>Food delivery orders / week</label>
+  <input id="orders" type="range" min="0" max="14" step="1" value="3">
+  <div class="range-value"><span id="ordersVal">3</span> order(s)</div>
+
+  <div class="actions-row">
+    <button onclick="recalculate()">Calculate</button>
+    <button class="secondary" onclick="resetInputs()">Reset</button>
+  </div>
+  <div class="small" style="margin-top:15px">India grid default: 0.71 kg CO₂/kWh</div>
+</aside>
+
+<main class="main">
+  <h1>🌱 CarbonRoute</h1>
+  <p class="subtitle">Google Maps for your carbon footprint · Climate Action (SDG 13)</p>
+  <div class="flow">Collect data → Calculate footprint → Find hotspots → Recommend / automate actions → Track progress</div>
+
+  <nav class="tabs">
+    <button class="tab active" onclick="showTab(0)">1 · Collect</button>
+    <button class="tab" onclick="showTab(1)">2 · Footprint & hotspots</button>
+    <button class="tab" onclick="showTab(2)">3 · Actions & automation</button>
+    <button class="tab" onclick="showTab(3)">4 · Track progress</button>
+  </nav>
+
+  <section class="panel active" id="tab0">
+    <h2>Automatic data collection</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>📄 Bills</h3>
+        <p>Upload an electricity bill as CSV or TXT. The page looks for a <b>kWh / units</b> value and can update your electricity input automatically.</p>
+        <div class="file"><input id="billFile" type="file" accept=".csv,.txt"></div>
+        <div class="actions-row"><button onclick="readBill()">Read bill</button><button class="secondary" onclick="downloadSample()">Download a sample bill CSV</button></div>
+        <div id="billResult" class="small" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h3>📡 IoT smart meter</h3>
+        <p>A smart meter or sensor (ESP32, Shelly, Tuya) can send readings. Below is a simulated meter for the demo, or upload real readings.</p>
+        <div class="grid3">
+          <div class="kpi"><span class="small">Average</span><strong id="iotAvg">—</strong><span class="small">kWh/month</span></div>
+          <div class="kpi"><span class="small">Peak hour</span><strong id="iotPeak">—</strong><span class="small">estimated</span></div>
+          <div class="kpi"><span class="small">Status</span><strong id="iotStatus">Demo</strong><span class="small">simulated</span></div>
+        </div>
+        <div class="actions-row"><button onclick="simulateIoT()">Simulate meter</button><button class="secondary" onclick="useIoT()">Use IoT reading</button></div>
+        <div class="file" style="margin-top:12px"><input id="iotFile" type="file" accept=".csv,.txt"></div>
+        <div id="iotResult" class="small" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <h3>🌐 Live grid API</h3>
+        <p>Use today's grid carbon intensity instead of the average factor. A browser-only demo cannot safely store an API secret, so the default remains available.</p>
+        <label>Grid zone code</label>
+        <input id="zone" type="text" value="IN-WE">
+        <label>Grid factor (kg CO₂/kWh)</label>
+        <input id="gridFactor" type="number" min="0" step="0.001" value="0.71">
+        <div class="actions-row"><button onclick="applyGrid()">Use this factor</button><button class="secondary" onclick="demoGrid()">Demo live factor</button></div>
+        <div id="gridResult" class="small" style="margin-top:8px">Using default average factor.</div>
+      </div>
+
+      <div class="card">
+        <h3>Activity feed</h3>
+        <div id="activityLog" class="log">Ready.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="tab1">
+    <h2>Your yearly footprint</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="metric" id="totalMetric">0 kg</div>
+        <div class="metric-label">Total CO₂e / year</div>
+        <div id="agentMsg" class="notice">Agent insight will appear here.</div>
+        <div class="grid3">
+          <div class="kpi"><span class="small">Trees' yearly absorption</span><strong id="trees">0</strong><span class="small">approx. trees</span></div>
+          <div class="kpi"><span class="small">Grid factor</span><strong id="gridMetric">0.71</strong><span class="small">kg/kWh</span></div>
+          <div class="kpi"><span class="small">Top hotspot</span><strong id="topMetric">—</strong><span class="small">category</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Hotspots</h3>
+        <div id="bars"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="tab2">
+    <h2>The agent's route to lower emissions</h2>
+    <div id="actionsBox"></div>
+    <div class="actions-row">
+      <button onclick="buildPlan()">Build my plan</button>
+      <button class="secondary" onclick="clearPlan()">Clear</button>
+    </div>
+    <div class="notice" id="savedNotice">Select actions to estimate savings.</div>
+    <div class="card">
+      <h3>Automation</h3>
+      <p>Download a simple calendar plan for the actions you selected.</p>
+      <button onclick="downloadICS()">Download weekly action plan (.ics)</button>
+    </div>
+  </section>
+
+  <section class="panel" id="tab3">
+    <h2>Track progress over time</h2>
+    <div class="actions-row"><button onclick="logMonth()">➕ Log this month's footprint</button><button class="secondary" onclick="downloadHistory()">💾 Download history</button><button class="secondary" onclick="clearHistory()">Clear history</button></div>
+    <div class="card" style="margin-top:18px">
+      <label>My goal: reduce footprint by (%)</label>
+      <input id="goal" type="range" min="5" max="60" step="1" value="20">
+      <div class="range-value"><span id="goalVal">20</span>% reduction</div>
+      <div id="progressInfo" class="small" style="margin:12px 0">Log your first month to start your trend line.</div>
+      <div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="grid3" style="margin-top:18px">
+      <div class="kpi"><span class="small">Baseline</span><strong id="baseMetric">—</strong></div>
+      <div class="kpi"><span class="small">Latest</span><strong id="latestMetric">—</strong></div>
+      <div class="kpi"><span class="small">Goal</span><strong id="goalMetric">—</strong></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3>Trend</h3>
+      <canvas id="trend" width="900" height="280"></canvas>
+    </div>
+  </section>
+
+  <p class="small" style="margin-top:30px">Estimates use average emission factors (India grid ≈ 0.71 kg CO₂/kWh). The IoT meter is a simulated demo. They guide habits and are not for official reporting.</p>
+</main>
+</div>
+
+<script>
+const state = {
+  grid: 0.71,
+  fuelKg: 0,
+  iotMonthly: null,
+  history: JSON.parse(localStorage.getItem("carbonroute_history") || "[]"),
+  picked: new Set()
+};
+
+const modes = {walk:0, bike:0.04, car:0.18, bus:0.07, train:0.04};
+const diets = {vegan:600, vegetarian:900, mixed:1500, meat:2300};
+
+function $(id){return document.getElementById(id)}
+function n(id){return Number($(id).value)||0}
+function fmt(x){return Math.round(x).toLocaleString("en-IN")}
+function log(msg){
+  const t = new Date().toLocaleTimeString();
+  $("activityLog").innerHTML = `${t}  ${msg}<br>` + $("activityLog").innerHTML;
+}
+function showTab(i){
+  document.querySelectorAll(".tab").forEach((b,j)=>b.classList.toggle("active",j===i));
+  document.querySelectorAll(".panel").forEach((p,j)=>p.classList.toggle("active",j===i));
+}
+function syncLabels(){
+  $("elecVal").textContent=n("elec"); $("kmVal").textContent=n("km");
+  $("flightsVal").textContent=n("flights"); $("ordersVal").textContent=n("orders");
+  $("goalVal").textContent=n("goal");
+}
+document.querySelectorAll('input[type=range]').forEach(x=>x.addEventListener("input",()=>{syncLabels();recalculate()}));
+
+function footprint(){
+  const elec=n("elec"), km=n("km"), flights=n("flights"), orders=n("orders");
+  const electricity = elec*12*state.grid;
+  const transport = km*365*modes[$("mode").value];
+  const diet = diets[$("diet").value];
+  const air = flights*900;
+  const delivery = orders*52*0.9;
+  const fuel = state.fuelKg;
+  return {Electricity:electricity, Transport:transport, Diet:diet, Flights:air, "Food delivery":delivery, "Fuel":fuel};
+}
+function actions(parts){
+  const km=n("km"), flights=n("flights"), orders=n("orders"), elec=n("elec");
+  const a=[
+    ["elec","Reduce electricity use by 15%","Switch off standby loads and shift heavy appliances to efficient periods.",elec*12*state.grid*0.15],
+    ["travel","Replace 2 car days each week with public transport / cycling","Cut daily high-carbon travel where practical.",km*365*modes[$("mode").value]*0.28],
+    ["diet","Choose more plant-forward meals","Reduce the food footprint while keeping meals practical.",diets[$("diet").value]*0.20],
+    ["flight","Avoid one round-trip flight","Choose rail or remote attendance when practical.",flights>0?900:0],
+    ["delivery","Reduce food delivery by 2 orders / week","Combine orders and choose local pickup when possible.",Math.min(orders,2)*52*0.9],
+  ];
+  return a.filter(x=>x[3]>0).sort((a,b)=>b[3]-a[3]);
+}
+function recalculate(){
+  syncLabels();
+  const p=footprint(), total=Object.values(p).reduce((a,b)=>a+b,0);
+  $("totalMetric").textContent=fmt(total)+" kg";
+  $("gridMetric").textContent=state.grid.toFixed(3);
+  const sorted=Object.entries(p).sort((a,b)=>b[1]-a[1]);
+  const top=sorted[0]||["—",0];
+  $("topMetric").textContent=top[0];
+  $("trees").textContent=fmt(total/21);
+  $("bars").innerHTML=sorted.map(([k,v])=>`
+    <div class="bar-row"><span>${k}</span><div class="bar"><span style="width:${total?Math.max(1,v/total*100):0}%"></span></div><b>${fmt(v)} kg</b></div>`).join("");
+  const acts=actions(p);
+  $("agentMsg").innerHTML=`<b>Agent:</b> Your biggest hotspot is <b>${top[0].toLowerCase()}</b> at ${fmt(top[1])} kg a year (${total?Math.round(top[1]/total*100):0}%). ${acts.length?`Best single move: <b>${acts[0][1].toLowerCase()}</b>, saving about ${fmt(acts[0][3])} kg.`:""}`;
+  renderActions(acts);
+  updateProgress();
+  return {p,total,acts};
+}
+function renderActions(acts){
+  $("actionsBox").innerHTML=acts.length?acts.map((a,i)=>`
+    <div class="action">
+      <div><label style="margin:0;display:inline"><input type="checkbox" data-action="${a[0]}" ${state.picked.has(a[0])?"checked":""} onchange="toggleAction('${a[0]}',this.checked)"> <span class="action-title">${a[1]}</span></label><div class="small" style="margin-left:28px">${a[2]}</div></div>
+      <div class="saving">−${fmt(a[3])} kg</div>
+    </div>`).join(""):"<div class='notice'>No reduction actions are currently available for these inputs.</div>";
+}
+function toggleAction(id,on){on?state.picked.add(id):state.picked.delete(id);updateSaved()}
+function buildPlan(){
+  const a=actions(footprint()); state.picked=new Set(a.slice(0,3).map(x=>x[0])); renderActions(a); updateSaved(); log("Agent built a plan from the top 3 actions");
+}
+function clearPlan(){state.picked.clear();renderActions(actions(footprint()));updateSaved();log("Action plan cleared")}
+function updateSaved(){
+  const a=actions(footprint()); const saved=a.filter(x=>state.picked.has(x[0])).reduce((s,x)=>s+x[3],0);
+  $("savedNotice").innerHTML=`<b>Net CO₂ saved:</b> ${fmt(saved)} kg. The agent uses lightweight rules, not a large AI model.`;
+  state.saved=saved;
+}
+function simulateIoT(){
+  const readings=Array.from({length:24},(_,h)=>Math.max(1,8+Math.sin(h/24*Math.PI*2)*3+Math.random()*3));
+  const daily=readings.reduce((a,b)=>a+b,0), monthly=daily*30;
+  state.iotMonthly=monthly;
+  $("iotAvg").textContent=monthly.toFixed(0);
+  $("iotPeak").textContent=String(readings.indexOf(Math.max(...readings))).padStart(2,"0")+":00";
+  $("iotStatus").textContent="Online";
+  $("iotResult").textContent="Simulated 24-hour meter data generated.";
+  log(`IoT → ${monthly.toFixed(0)} kWh/month`);
+}
+function useIoT(){if(state.iotMonthly){$("elec").value=Math.min(800,Math.round(state.iotMonthly/5)*5);syncLabels();recalculate();log(`IoT → ${state.iotMonthly.toFixed(0)} kWh/month`)}else $("iotResult").textContent="Simulate or upload a meter reading first."}
+function parseNumbers(text){
+  const vals=(text.match(/\d+(?:\.\d+)?/g)||[]).map(Number);
+  return vals;
+}
+$("iotFile").addEventListener("change",async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const text=await f.text(), nums=parseNumbers(text);
+  if(nums.length){state.iotMonthly=nums.reduce((a,b)=>a+b,0)/Math.max(1,nums.length)*30;$("iotAvg").textContent=state.iotMonthly.toFixed(0);$("iotStatus").textContent="Imported";$("iotResult").textContent="Read numeric meter values from the file."}
+});
+async function readBill(){
+  const f=$("billFile").files[0]; if(!f){$("billResult").textContent="Choose a CSV or TXT bill first.";return}
+  const text=await f.text();
+  const lower=text.toLowerCase();
+  const nums=parseNumbers(text);
+  let kwh=null;
+  const lines=text.split(/\r?\n/);
+  for(const line of lines){
+    if(/kwh|units|electricity/.test(line.toLowerCase())){
+      const m=line.match(/\d+(?:\.\d+)?/); if(m){kwh=Number(m[0]);break}
+    }
+  }
+  if(kwh==null && nums.length) kwh=nums.reduce((a,b)=>a+b,0)/nums.length;
+  if(kwh!=null){
+    $("elec").value=Math.min(800,Math.round(kwh/5)*5);syncLabels();recalculate();
+    $("billResult").textContent=`Found approximately ${kwh.toFixed(0)} kWh/month. Electricity input updated.`;
+    log(`Bill → ${kwh.toFixed(0)} kWh/month`);
+  }else $("billResult").textContent="No kWh/units value found in this file.";
+}
+function downloadSample(){
+  downloadBlob("sample_bill.csv","month,kwh\nJan,210\nFeb,190\nMar,240\n","text/csv");
+}
+function applyGrid(){
+  const g=n("gridFactor"); if(g>0){state.grid=g;recalculate();$("gridResult").textContent=`Using ${g.toFixed(3)} kg CO₂/kWh for ${$("zone").value}.`;log(`Grid → factor ${g.toFixed(3)} kg/kWh (${$("zone").value})`)}
+}
+function demoGrid(){
+  state.grid=0.64; $("gridFactor").value="0.64"; recalculate();
+  $("gridResult").textContent="Demo live factor: 0.640 kg CO₂/kWh.";
+  log("API demo → grid factor 0.640 kg/kWh");
+}
+function logMonth(){
+  const r=recalculate(); state.history.push({date:new Date().toISOString().slice(0,10),footprint:Math.round(r.total*10)/10,planned_saving:Math.round((state.saved||0)*10)/10});
+  localStorage.setItem("carbonroute_history",JSON.stringify(state.history)); updateProgress(); log(`Logged footprint ${fmt(r.total)} kg`);
+}
+function updateProgress(){
+  const h=state.history, goal=n("goal");
+  if(!h.length){$("progressInfo").textContent="Log your first month to start your trend line. Change your inputs next month and log again.";$("progressFill").style.width="0%";$("baseMetric").textContent="—";$("latestMetric").textContent="—";$("goalMetric").textContent="—";drawTrend();return}
+  const base=h[0].footprint, latest=h[h.length-1].footprint, target=base*(1-goal/100);
+  const done=base>target?(base-latest)/(base-target):0, pct=Math.max(0,Math.min(100,done*100));
+  $("progressInfo").textContent=`${Math.round(pct)}% of your goal reached`;
+  $("progressFill").style.width=pct+"%"; $("baseMetric").textContent=fmt(base)+" kg";$("latestMetric").textContent=fmt(latest)+" kg";$("goalMetric").textContent=fmt(target)+" kg";drawTrend();
+}
+function drawTrend(){
+  const c=$("trend"),ctx=c.getContext("2d"),w=c.width,h=c.height;
+  ctx.clearRect(0,0,w,h);ctx.strokeStyle="#d9e5dc";ctx.lineWidth=1;
+  for(let i=0;i<5;i++){let y=30+i*(h-60)/4;ctx.beginPath();ctx.moveTo(45,y);ctx.lineTo(w-20,y);ctx.stroke()}
+  const data=state.history;if(!data.length){ctx.fillStyle="#68756d";ctx.font="14px Arial";ctx.fillText("No history yet",45,50);return}
+  const vals=data.map(x=>x.footprint), max=Math.max(...vals)*1.15||1,min=Math.min(...vals)*.85;
+  const x=i=>45+(w-70)*(data.length===1?.5:i/(data.length-1));
+  const y=v=>h-35-(h-70)*(v-min)/(max-min||1);
+  ctx.strokeStyle="#1f7a4d";ctx.lineWidth=3;ctx.beginPath();data.forEach((d,i)=>i?ctx.lineTo(x(i),y(d.footprint)):ctx.moveTo(x(i),y(d.footprint)));ctx.stroke();
+  ctx.fillStyle="#1f7a4d";data.forEach((d,i)=>{ctx.beginPath();ctx.arc(x(i),y(d.footprint),4,0,Math.PI*2);ctx.fill()});
+}
+function downloadHistory(){
+  const rows=[["date","footprint","planned_saving"],...state.history.map(x=>[x.date,x.footprint,x.planned_saving])];
+  downloadBlob("carbonroute_history.csv",rows.map(r=>r.join(",")).join("\n"),"text/csv");
+}
+function clearHistory(){state.history=[];localStorage.removeItem("carbonroute_history");updateProgress();log("History cleared")}
+function downloadBlob(name,data,type){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)
+}
+function downloadICS(){
+  const a=actions(footprint()).filter(x=>state.picked.has(x[0]));
+  if(!a.length){alert("Select at least one action first.");return}
+  const events=a.map((x,i)=>`BEGIN:VEVENT\nUID:carbonroute-${i}@carbonroute\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z/,"Z")}\nDTSTART:20261005T090000\nRRULE:FREQ=WEEKLY\nSUMMARY:CarbonRoute: ${x[1]}\nDESCRIPTION:${x[2]}\nEND:VEVENT`).join("\n");
+  downloadBlob("carbonroute_plan.ics",`BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//CarbonRoute//EN\n${events}\nEND:VCALENDAR`,"text/calendar");
+}
+function resetInputs(){
+  $("elec").value=120;$("km").value=12;$("flights").value=1;$("orders").value=3;$("mode").value="car";$("diet").value="mixed";state.grid=.71;state.picked.clear();syncLabels();recalculate();log("Inputs reset")
+}
+syncLabels();recalculate();updateProgress();
+</script>
+</body>
+</html>
